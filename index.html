@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d12">
+<meta name="description" content="在线钢琴 · Web Audio 实时合成 35 种音色 · 支持 MIDI 文件多轨多音色播放与导出 · 屏幕触控 / 电脑键盘 / 外接 MIDI 键盘">
+<title>指尖钢琴 · 在线 MIDI 合成钢琴</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎹</text></svg>">
+</head>
+<body>
+
+<div class="app">
+  <!-- ============ 顶栏 ============ -->
+  <header class="topbar">
+    <button class="drawer-btn" id="drawerBtn" aria-label="音色与设置">☰</button>
+    <div class="brand">
+      <span class="logo">♪</span>
+      <div class="brand-text">
+        <h1>指尖钢琴</h1>
+        <p>Web Audio 实时合成 · MIDI 多音色</p>
+      </div>
+    </div>
+    <div class="top-right">
+      <span class="pill" id="midiStatus">MIDI 未连接</span>
+      <span class="pill" id="polyStatus">复音 0 / 64</span>
+      <label class="vol-ctl" title="总音量">
+        <span>🔊</span>
+        <input type="range" id="masterVol" min="0" max="1" step="0.01" value="0.85">
+      </label>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- ============ 侧栏 ============ -->
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>音色库 <span class="now" id="instNow">三角钢琴</span></h2>
+        <div class="inst-groups" id="instGroups"></div>
+      </section>
+
+      <section class="panel">
+        <h2>演奏设置</h2>
+        <div class="ctl-row">
+          <label>混响</label>
+          <input type="range" id="reverbAmt" min="0" max="1" step="0.01" value="0.5">
+        </div>
+        <div class="ctl-row">
+          <label>电脑键盘力度</label>
+          <input type="range" id="kbVel" min="20" max="100" step="1" value="82">
+        </div>
+        <div class="ctl-row">
+          <label>音域</label>
+          <div class="oct-ctl">
+            <button id="octDown" title="降八度（↓）">−</button>
+            <span id="octLabel">C2 – B5</span>
+            <button id="octUp" title="升八度（↑）">+</button>
+          </div>
+        </div>
+        <button class="btn wide" id="sustainBtn">🦶 延音踏板（Shift）</button>
+        <p class="hint">
+          屏幕键盘按触位置决定力度：越靠下越响。<br>
+          电脑键盘：<code>Z S X D C…</code> 低八度，<code>Q 2 W 3 E…</code> 高八度；<code>空格</code> 播放/暂停。
+        </p>
+      </section>
+
+      <section class="panel">
+        <h2>MIDI 设备</h2>
+        <label class="field">
+          <span>输入（外接键盘）</span>
+          <select id="midiInSelect"><option>正在检测…</option></select>
+        </label>
+        <label class="field">
+          <span>输出（把屏幕键盘当控制器）</span>
+          <select id="midiOutSelect"><option value="">不输出到外部设备</option></select>
+        </label>
+        <button class="btn wide ghost" id="btnMidiScan">重新扫描设备</button>
+        <p class="hint" id="midiHint">正在检测 MIDI 设备…</p>
+      </section>
+    </aside>
+
+    <!-- ============ 主舞台 ============ -->
+    <section class="stage">
+      <div class="panel scope-panel">
+        <canvas id="scope"></canvas>
+      </div>
+
+      <div class="panel roll-panel">
+        <canvas id="roll"></canvas>
+        <div class="roll-caption">
+          <span id="songName">未载入乐曲 · 实时演奏模式</span>
+          <span class="roll-tools">
+            <input type="file" id="fileMidi" accept=".mid,.midi,.smf" hidden>
+            <button class="btn mini" onclick="document.getElementById('fileMidi').click()">📂 打开 MIDI</button>
+            <button class="btn mini" id="btnDemo">✨ 演示曲</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="panel track-panel" id="trackPanel" hidden>
+        <h2>多轨 / 多音色 <em class="tip">为每个通道单独指定音色，M 键静音</em></h2>
+        <div class="track-list" id="trackList"></div>
+      </div>
+
+      <div class="panel transport">
+        <button class="btn primary" id="btnPlay">▶ 播放</button>
+        <button class="btn" id="btnStop">⏹ 停止</button>
+        <button class="btn rec" id="btnRec">● 录音</button>
+        <button class="btn" id="btnExport">⬇ 导出 MIDI</button>
+        <div class="progress" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span class="time" id="timeNow">0:00</span>
+      </div>
+
+      <div class="piano-wrap">
+        <div class="piano-scroll">
+          <div id="piano"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="drop-mask" id="dropMask"><div>松手即可载入 MIDI 文件</div></div>
+<div class="audio-hint" id="audioHint">点击任意位置开启声音 🔊</div>
+
+<script src="js/instruments.js"></script>
+<script src="js/synth.js"></script>
+<script src="js/midi-file.js"></script>
+<script src="js/player.js"></script>
+<script src="js/keyboard.js"></script>
+<script src="js/visualizer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

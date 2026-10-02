@@ -1,0 +1,21 @@
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+
+# 依赖与构建产物（本项目为纯静态，无需构建）
+node_modules/
+dist/
+
+# 日志与临时文件
+*.log
+*.tmp
+
+# 本地音色库（体积大，不入库）
+*.sf2
+*.sf3
+*.dls
+PianoLibs/
