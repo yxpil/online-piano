@@ -111,8 +111,20 @@
     return p.gm == null ? 0 : p.gm;
   }
 
+  function setPlayButton(playing) {
+    $('#btnPlay').innerHTML = icon(playing ? 'i-pause' : 'i-play', 'h-4 w-4') +
+      '<span>' + (playing ? '暂停' : '播放') + '</span>';
+  }
+
+  function setRecButton(recording) {
+    const b = $('#btnRec');
+    b.classList.toggle('is-on', recording);
+    b.innerHTML = icon(recording ? 'i-stop' : 'i-record', 'h-4 w-4') +
+      '<span>' + (recording ? '停止录音' : '录音') + '</span>';
+  }
+
   function updatePoly() {
-    const el = $('#polyStatus');
+    const el = $('#polyStatus span');
     if (el) el.textContent = '复音 ' + synth.voiceCount + ' / ' + synth.maxVoices;
   }
 
@@ -129,6 +141,18 @@
   }
 
   /* =========================================================
+   *  图标（内联 SVG 雪碧图，不使用 emoji）
+   * ========================================================= */
+  const GROUP_ICON = {
+    '键盘': 'i-piano', '音槌': 'i-bell', '风琴': 'i-pipes', '合奏': 'i-music',
+    '拨弦': 'i-guitar', '贝斯': 'i-equalizer', '管乐': 'i-wind',
+    '合成器': 'i-sliders', '打击乐': 'i-drum'
+  };
+  function icon(id, cls) {
+    return '<svg class="' + (cls || 'h-4 w-4') + '"><use href="#' + id + '"/></svg>';
+  }
+
+  /* =========================================================
    *  音色面板
    * ========================================================= */
   function buildInstrumentPanel() {
@@ -137,18 +161,20 @@
     InstrumentLib.groups.forEach(function (g) {
       const sec = document.createElement('div');
       sec.className = 'inst-group';
+
       const h = document.createElement('div');
-      h.className = 'inst-group-title';
-      h.textContent = g;
+      h.className = 'mb-1.5 flex items-center gap-1.5 pl-0.5 text-[11px] text-[#6b7793]';
+      h.innerHTML = icon(GROUP_ICON[g] || 'i-music', 'h-3.5 w-3.5') + '<span>' + g + '</span>';
       sec.appendChild(h);
+
       const grid = document.createElement('div');
-      grid.className = 'inst-grid';
+      grid.className = 'grid grid-cols-2 gap-1.5';
       InstrumentLib.all.filter(function (p) { return p.group === g; }).forEach(function (p) {
         const b = document.createElement('button');
         b.className = 'inst-chip';
         b.dataset.id = p.id;
-        b.style.setProperty('--c', p.color);
-        b.innerHTML = '<i></i><span>' + p.name + '</span>';
+        b.innerHTML = '<i style="color:' + p.color + '">' + icon(GROUP_ICON[g] || 'i-music', 'h-3.5 w-3.5') + '</i>' +
+          '<span class="truncate">' + p.name + '</span>';
         b.addEventListener('click', function () { selectInstrument(p.id); });
         grid.appendChild(b);
       });
@@ -185,16 +211,21 @@
     chKeys.forEach(function (k) {
       const ch = midi.channels[k];
       const row = document.createElement('div');
-      row.className = 'track-row';
+      row.className = 'track-row flex items-center gap-2 rounded-[10px] border border-line bg-panel-2 px-2 py-1.5';
 
       const name = document.createElement('div');
-      name.className = 'track-name';
-      const tname = (midi.tracks.find(function (t) { return t.channel === ch.channel; }) || {}).name || ('通道 ' + (ch.channel + 1));
-      name.innerHTML = '<b>Ch' + (ch.channel + 1) + (ch.isDrum ? ' ♩' : '') + '</b><span>' + escapeHtml(tname) + '</span><em>' + ch.noteCount + ' 音</em>';
+      name.className = 'track-name flex w-[150px] shrink-0 items-baseline gap-1.5 overflow-hidden text-[11.5px]';
+      // 轨道名若已是 "Ch N" / "Channel N" 就不再重复前缀
+      const rawName = (midi.tracks.find(function (t) { return t.channel === ch.channel; }) || {}).name || ('通道 ' + (ch.channel + 1));
+      const tname = /^ch(annel)?\s*\d+\s*$/i.test(rawName.trim()) ? '' : rawName;
+      name.innerHTML = '<b class="font-mono text-blue">Ch' + (ch.channel + 1) + '</b>' +
+        (ch.isDrum ? icon('i-drum', 'h-3 w-3 self-center text-dim-2') : '') +
+        (tname ? '<span class="truncate text-[#b9c4da]">' + escapeHtml(tname) + '</span>' : '') +
+        '<em class="shrink-0 text-[10.5px] not-italic text-dim-2">' + ch.noteCount + ' 音</em>';
       row.appendChild(name);
 
       const sel = document.createElement('select');
-      sel.className = 'track-inst';
+      sel.className = 'track-inst sel flex-1 py-[5px] text-[11.5px]';
       InstrumentLib.groups.forEach(function (g) {
         const og = document.createElement('optgroup');
         og.label = g;
@@ -219,12 +250,13 @@
 
       const mute = document.createElement('button');
       mute.className = 'track-mute';
-      mute.textContent = 'M';
       mute.title = '静音该通道';
+      mute.innerHTML = icon('i-volume', 'h-3.5 w-3.5');
       mute.addEventListener('click', function () {
         const m = !player.mutedChannels[ch.channel];
         player.setChannelMuted(ch.channel, m);
         mute.classList.toggle('on', m);
+        mute.innerHTML = icon(m ? 'i-volume-off' : 'i-volume', 'h-3.5 w-3.5');
       });
       row.appendChild(mute);
 
@@ -462,14 +494,14 @@
         state.mode = 'live';
         player.stop();
         roll.setNotes(state.liveNotes, { lowNote: 36, highNote: 84 });
-        $('#songName').textContent = '● 录音中…';
+        $('#songName').innerHTML = '<span class="inline-flex items-center gap-1.5">' +
+          '<span class="animate-blink h-2 w-2 rounded-full bg-rose"></span>录音中 · 弹奏后用「导出 MIDI」保存</span>';
         toast('开始录音，弹奏后用「导出 MIDI」保存');
       } else {
         $('#songName').textContent = '录音结束 · ' + state.recEvents.length + ' 个事件';
         toast('录音完成，可点击「导出 MIDI」');
       }
-      this.classList.toggle('on', state.recording);
-      this.textContent = state.recording ? '■ 停止录音' : '● 录音';
+      setRecButton(state.recording);
     });
 
     /* --- 拖放 --- */
@@ -544,7 +576,7 @@
       if (state.mode === 'song') kbd.highlight(note, false);
     });
     player.on('state', function (playing) {
-      $('#btnPlay').textContent = playing ? '⏸ 暂停' : '▶ 播放';
+      setPlayButton(playing);
     });
     player.on('ended', function () {
       kbd.clearHighlights();
@@ -592,7 +624,6 @@
         if (res.reason === 'unsupported') hint.textContent = '当前浏览器不支持 Web MIDI（建议 Chrome / Edge）。屏幕键盘与电脑键盘不受影响。';
         else if (res.reason === 'insecure') hint.textContent = '需要 HTTPS 或 localhost 环境才能连接 MIDI 设备。';
         else hint.textContent = '未授权访问 MIDI 设备，点击「重新扫描」并允许权限。';
-        $('#midiStatus').textContent = 'MIDI 未连接';
         refreshMidiUI([]);
         return;
       }
@@ -603,12 +634,17 @@
   function refreshMidiUI(inputs, outputs) {
     if (!inputs) inputs = kbd.midiInputs;
     const sel = $('#midiInSelect');
+    const status = $('#midiStatus');
+    const statusText = status.querySelector('span');
+    const statusIcon = status.querySelector('use');
     sel.innerHTML = '';
     if (!inputs.length) {
       const o = document.createElement('option');
       o.textContent = '未检测到 MIDI 输入设备';
       sel.appendChild(o);
-      $('#midiStatus').textContent = 'MIDI 未连接';
+      statusText.textContent = 'MIDI 未连接';
+      status.classList.remove('ok');
+      statusIcon.setAttribute('href', '#i-midi');
     } else {
       inputs.forEach(function (i) {
         const o = document.createElement('option');
@@ -616,8 +652,9 @@
         o.textContent = (i.manufacturer || '') + ' ' + (i.name || 'MIDI 输入');
         sel.appendChild(o);
       });
-      $('#midiStatus').textContent = 'MIDI 已连接 · ' + inputs.length + ' 台';
-      $('#midiStatus').classList.add('ok');
+      statusText.textContent = 'MIDI 已连接 · ' + inputs.length + ' 台';
+      status.classList.add('ok');
+      statusIcon.setAttribute('href', '#i-midi');
       if (!$('#midiHint').dataset.done) {
         $('#midiHint').dataset.done = '1';
         $('#midiHint').textContent = '已连接：' + inputs.map(function (i) { return i.name; }).join('、') + '。按键盘演奏即可自动使用当前音色。';

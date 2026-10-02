@@ -33,7 +33,8 @@ class PianoKeyboard {
   _build() {
     const el = this.el;
     el.innerHTML = '';
-    el.classList.add('piano');
+    // 保留 .piano 作为结构标记，外观交给 Tailwind 工具类
+    el.className = 'piano relative h-full w-full cursor-pointer touch-none select-none';
     const totalWhite = this.octaves * 7;
     const WHITE_OFFSETS = [0, 2, 4, 5, 7, 9, 11];
     const BLACK_DEFS = [
@@ -42,18 +43,17 @@ class PianoKeyboard {
     ];
 
     const whites = document.createElement('div');
-    whites.className = 'keys-white';
+    whites.className = 'flex h-full w-full';
     const blacks = document.createElement('div');
-    blacks.className = 'keys-black';
+    blacks.className = 'pointer-events-none absolute inset-0';
 
     const base = this.firstNote;
     for (let o = 0; o < this.octaves; o++) {
-      WHITE_OFFSETS.forEach(function (off, i) {
+      WHITE_OFFSETS.forEach(function (off) {
         const note = base + o * 12 + off;
         const k = document.createElement('div');
-        k.className = 'key white';
+        k.className = 'key white flex-1 min-w-0';
         k.dataset.note = note;
-        k.innerHTML = (off === 0 ? '<span class="klabel">' + MidiFile.nameOfNote(note) + '</span>' : '');
         whites.appendChild(k);
       });
     }
@@ -82,11 +82,9 @@ class PianoKeyboard {
   }
 
   _updateLabels() {
-    const base = this.firstNote;
     this.el.querySelectorAll('.key.white').forEach(function (k) {
       const note = +k.dataset.note;
-      const isC = note % 12 === 0;
-      k.innerHTML = isC ? '<span class="klabel">' + MidiFile.nameOfNote(note) + '</span>' : '';
+      k.innerHTML = (note % 12 === 0) ? '<span class="klabel">' + MidiFile.nameOfNote(note) + '</span>' : '';
     });
   }
 

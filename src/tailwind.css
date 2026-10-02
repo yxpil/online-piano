@@ -1,0 +1,254 @@
+/* ============================================================
+ *  指尖钢琴 —— Tailwind CSS v4 源文件
+ *  编译： npm run build   （产物 css/style.css）
+ * ============================================================ */
+@import "tailwindcss" source(none);
+
+@source "../index.html";
+@source "../js/*.js";
+
+/* ---------------- 设计令牌 ---------------- */
+@theme {
+  /* 背景层次 */
+  --color-ink-950: #080a0f;
+  --color-ink-900: #0c0f16;
+  --color-panel: #12161f;
+  --color-panel-2: #171d2a;
+  --color-elev: #1e273a;
+
+  /* 描边 */
+  --color-line: #242d40;
+  --color-line-2: #3c4a6b;
+
+  /* 文字 */
+  --color-txt: #e8edf8;
+  --color-dim: #8b97b3;
+  --color-dim-2: #5d6980;
+
+  /* 强调色 */
+  --color-gold-300: #f8d98a;
+  --color-gold-400: #f2b544;
+  --color-gold-500: #dd9a20;
+  --color-blue: #4ea8ff;
+  --color-mint: #45d6a0;
+  --color-rose: #ff6b6b;
+
+  /* 字体 */
+  --font-sans: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, Menlo, Consolas, "Courier New", monospace;
+
+  /* 动效 */
+  --animate-rec: rec-pulse 1.4s ease-out infinite;
+  --animate-blink: blink 1.5s ease-in-out infinite;
+
+  @keyframes rec-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 90, 90, .55); }
+    50%      { box-shadow: 0 0 0 9px rgba(255, 90, 90, 0); }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .3; }
+  }
+}
+
+/* ---------------- 组件层 ---------------- */
+@layer components {
+
+  /* ---------- 卡片 / 控件 ---------- */
+  .card {
+    @apply rounded-2xl border border-line bg-panel p-3.5;
+  }
+
+  .card-title {
+    @apply mb-2.5 flex items-center gap-2 text-[12.5px] font-semibold tracking-wide text-dim;
+  }
+
+  .bar {
+    @apply inline-block h-3 w-[3px] rounded-full bg-line-2;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-panel px-2.5 py-1 text-[11.5px] leading-none text-dim;
+  }
+  .pill.ok {
+    @apply border-mint/40 text-mint;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[10px] border border-line bg-panel-2 px-3 py-2 text-[12.5px] leading-none text-txt transition duration-150 hover:border-line-2 hover:bg-elev active:scale-[.97];
+  }
+  .btn.is-primary {
+    @apply border-transparent bg-gradient-to-br from-gold-300 to-gold-500 font-bold text-ink-950 shadow-[0_3px_14px_rgba(242,181,68,.22)] hover:brightness-105;
+  }
+  .btn.is-on {
+    @apply border-gold-400 bg-gold-400/12 text-gold-400;
+  }
+  .btn.is-rec.is-on {
+    @apply animate-rec border-transparent bg-gradient-to-br from-[#ff8a8a] to-[#e03b3b] text-white;
+  }
+
+  .sel {
+    @apply w-full cursor-pointer rounded-lg border border-line bg-panel-2 px-2.5 py-[7px] text-[12px] text-txt outline-none transition focus:border-gold-400;
+  }
+
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 999px;
+    background: #2b3550;
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--color-gold-400);
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(242, 181, 68, .15);
+    transition: transform .12s ease;
+  }
+  .slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+  .slider::-moz-range-thumb {
+    width: 14px; height: 14px; border: 0; border-radius: 50%;
+    background: var(--color-gold-400); cursor: pointer;
+  }
+
+  .scroll-y {
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #2a3348 transparent;
+  }
+  .scroll-y::-webkit-scrollbar { width: 7px; }
+  .scroll-y::-webkit-scrollbar-track { background: transparent; }
+  .scroll-y::-webkit-scrollbar-thumb { background: #2a3348; border-radius: 4px; }
+
+  /* ---------- 音色芯片 ---------- */
+  .inst-chip {
+    @apply flex cursor-pointer items-center gap-2 overflow-hidden rounded-[10px] border border-line bg-panel-2 px-2.5 py-2 text-left text-[12px] text-[#c3cde0] transition duration-150 hover:-translate-y-px hover:border-line-2 hover:text-white;
+  }
+  .inst-chip.active {
+    border-color: var(--color-gold-400);
+    color: #fff;
+    background: linear-gradient(135deg, rgba(242, 181, 68, .17), rgba(242, 181, 68, .04));
+  }
+  .inst-chip i { display: flex; }
+
+  /* ---------- 多轨行 ---------- */
+  .track-mute {
+    @apply grid h-7 w-7 shrink-0 cursor-pointer place-items-center rounded-lg border border-line bg-panel text-dim transition hover:border-line-2 hover:text-txt;
+  }
+  .track-mute.on {
+    @apply border-transparent bg-rose text-white;
+  }
+
+  /* ---------- 钢琴键盘 ---------- */
+  .key {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .key.white {
+    background: linear-gradient(180deg, #fcfdff 0%, #e9eef6 76%, #ccd5e2 100%);
+    border-right: 1px solid #b6c0d0;
+    border-radius: 0 0 5px 5px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 4px;
+    transition: background .06s ease;
+  }
+  .key.white:last-child { border-right: 0; }
+  .key.white.active {
+    background: linear-gradient(180deg, #ffe7ab 0%, #f5c85e 58%, #dda62c 100%);
+    box-shadow: inset 0 -14px 22px rgba(180, 120, 15, .35), 0 0 22px rgba(242, 181, 68, .22);
+  }
+  .key.black {
+    position: absolute;
+    top: 0;
+    height: 62%;
+    background: linear-gradient(180deg, #3a4259 0%, #1a1f2e 62%, #080b11 100%);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, .65), inset 0 -3px 0 rgba(255, 255, 255, .07);
+    transition: background .06s ease;
+    z-index: 3;
+  }
+  .key.black.active {
+    background: linear-gradient(180deg, #f5c455 0%, #cd952c 58%, #a4740f 100%);
+    box-shadow: 0 3px 10px rgba(242, 181, 68, .5);
+  }
+  .klabel {
+    font-size: 9px;
+    color: #98a4b8;
+    font-family: var(--font-mono);
+    pointer-events: none;
+  }
+
+  /* ---------- 浮层 ---------- */
+  .toast {
+    position: fixed;
+    top: 72px;
+    left: 50%;
+    z-index: 90;
+    max-width: 78vw;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--color-line);
+    background: rgba(24, 31, 48, .97);
+    color: var(--color-txt);
+    font-size: 12.5px;
+    text-align: center;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, .5);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -12px);
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.err { border-color: rgba(255, 107, 107, .6); color: #ffc9c9; }
+
+  .drop-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: none;
+    place-items: center;
+    background: rgba(8, 10, 15, .84);
+    backdrop-filter: blur(3px);
+  }
+  .drop-mask.show { display: grid; }
+  .drop-mask > div {
+    padding: 34px 52px;
+    border: 2px dashed var(--color-gold-400);
+    border-radius: 18px;
+    color: var(--color-gold-400);
+    font-size: 15px;
+  }
+
+  .audio-hint {
+    position: fixed;
+    top: 124px;
+    left: 50%;
+    z-index: 70;
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(242, 181, 68, .45);
+    background: rgba(242, 181, 68, .14);
+    color: var(--color-gold-400);
+    font-size: 12.5px;
+    transform: translateX(-50%);
+    transition: opacity .4s ease;
+  }
+  .audio-hint.gone { opacity: 0; pointer-events: none; }
+}
+
+/* ---------------- 移动端抽屉（需后代选择器，工具类无法表达） ---------------- */
+@media (max-width: 1023px) {
+  .sidebar {
+    transform: translateX(-102%);
+    transition: transform .26s cubic-bezier(.3, .7, .3, 1);
+  }
+  body.drawer-open .sidebar { transform: none; }
+  .toast { top: 66px; }
+  .audio-hint { top: 118px; }
+}

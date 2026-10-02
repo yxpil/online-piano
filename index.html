@@ -1,131 +1,311 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="h-full">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0b0d12">
-<meta name="description" content="在线钢琴 · Web Audio 实时合成 35 种音色 · 支持 MIDI 文件多轨多音色播放与导出 · 屏幕触控 / 电脑键盘 / 外接 MIDI 键盘">
+<meta name="theme-color" content="#080a0f">
+<meta name="description" content="在线钢琴 · Web Audio 实时合成 36 种音色 · 支持 MIDI 文件多轨多音色播放与导出 · 屏幕触控 / 电脑键盘 / 外接 MIDI 键盘">
 <title>指尖钢琴 · 在线 MIDI 合成钢琴</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23080a0f'/><rect x='4.5' y='7.5' width='23' height='17' rx='3' fill='none' stroke='%23f2b544' stroke-width='2'/><path d='M12.5 7.5v17M19.5 7.5v17' stroke='%23f2b544' stroke-width='1.6'/><rect x='9' y='7.5' width='4' height='8.5' rx='1.4' fill='%23f2b544'/><rect x='16' y='7.5' width='4' height='8.5' rx='1.4' fill='%23f2b544'/></svg>">
 <link rel="stylesheet" href="css/style.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎹</text></svg>">
 </head>
-<body>
+<body class="h-full overflow-hidden bg-ink-950 font-sans text-txt antialiased">
 
-<div class="app">
+<!-- ============ SVG 图标雪碧图 ============ -->
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <g id="stroke-defaults"></g>
+  </defs>
+  <symbol id="i-piano" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.5" y="4" width="19" height="16" rx="2.2"/>
+    <path d="M9.5 4v16M16 4v16"/>
+    <rect x="6" y="4" width="3" height="7.5" rx="1.2" fill="currentColor" stroke="none"/>
+    <rect x="12.5" y="4" width="3" height="7.5" rx="1.2" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <path d="M4 6h16M4 12h16M4 18h16"/>
+  </symbol>
+  <symbol id="i-volume" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 5 6.5 8.5H3v7h3.5L11 19z"/>
+    <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+    <path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+  </symbol>
+  <symbol id="i-volume-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 5 6.5 8.5H3v7h3.5L11 19z"/>
+    <path d="m15.5 9.5 5 5M20.5 9.5l-5 5"/>
+  </symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="7 4.5 19.5 12 7 19.5"/>
+  </symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="7" y="4.5" width="3.6" height="15" rx="1.3"/>
+    <rect x="13.4" y="4.5" width="3.6" height="15" rx="1.3"/>
+  </symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+    <rect x="5.5" y="5.5" width="13" height="13" rx="2.6"/>
+  </symbol>
+  <symbol id="i-record" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+    <circle cx="12" cy="12" r="9"/>
+    <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.5 15v4a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-4"/>
+    <path d="m7.5 11 4.5 4.5 4.5-4.5"/>
+    <path d="M12 15.5V3.5"/>
+  </symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 7a2 2 0 0 1 2-2h3.6a2 2 0 0 1 1.7.95l.8 1.3a2 2 0 0 0 1.7.95H19a2 2 0 0 1 2 2v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+  </symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M11 3c.45 5 1.55 6.1 6.5 6.5-4.95.4-6.05 1.5-6.5 6.5-.45-5-1.55-6.1-6.5-6.5C9.45 9.1 10.55 8 11 3Z"/>
+    <path d="M18 14.5c.2 2.1.7 2.6 2.7 2.8-2 .2-2.5.7-2.7 2.8-.2-2.1-.7-2.6-2.7-2.8 2-.2 2.5-.7 2.7-2.8Z"/>
+  </symbol>
+  <symbol id="i-chevron-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m6 15 6-6 6 6"/>
+  </symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m6 9 6 6 6-6"/>
+  </symbol>
+  <symbol id="i-pedal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3.5" y="15.5" width="17" height="4.5" rx="2.2"/>
+    <path d="M12 3v8.5"/><path d="m8.5 8.5 3.5 3.5 3.5-3.5"/>
+  </symbol>
+  <symbol id="i-waves" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+    <path d="M2.5 6.5c.8.7 1.5 1.2 3 1.2 3 0 3-2.4 6-2.4s3 2.4 6 2.4c1.5 0 2.2-.5 3-1.2"/>
+    <path d="M2.5 12c.8.7 1.5 1.2 3 1.2 3 0 3-2.4 6-2.4s3 2.4 6 2.4c1.5 0 2.2-.5 3-1.2"/>
+    <path d="M2.5 17.5c.8.7 1.5 1.2 3 1.2 3 0 3-2.4 6-2.4s3 2.4 6 2.4c1.5 0 2.2-.5 3-1.2"/>
+  </symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+  </symbol>
+  <symbol id="i-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="6" width="20" height="12" rx="2.5"/>
+    <path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M6.8 14h10.4"/>
+  </symbol>
+  <symbol id="i-midi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4.5" y="6" width="15" height="7" rx="3.2"/>
+    <path d="M9 3v3M15 3v3"/><path d="M12 13v8"/>
+  </symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 0 1 9-9 9.7 9.7 0 0 1 6.7 2.7L21 8"/>
+    <path d="M21 3.5V8h-4.5"/>
+    <path d="M21 12a9 9 0 0 1-9 9 9.7 9.7 0 0 1-6.7-2.7L3 16"/>
+    <path d="M8 16H3v4.5"/>
+  </symbol>
+  <!-- 音色分组图标 -->
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 2.5 8.5 2.5 8.5H3.5S6 15 6 8"/>
+    <path d="M10.3 20.5a2 2 0 0 0 3.4 0"/>
+  </symbol>
+  <symbol id="i-pipes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3.4" y="10" width="3.2" height="10" rx="1.3"/>
+    <rect x="10.4" y="4" width="3.2" height="16" rx="1.3"/>
+    <rect x="17.4" y="7.4" width="3.2" height="12.6" rx="1.3"/>
+  </symbol>
+  <symbol id="i-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+  </symbol>
+  <symbol id="i-guitar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="8.6" cy="15.2" r="5.4"/><circle cx="8.6" cy="15.2" r="1.7"/>
+    <path d="m12.6 11.2 6.2-6.2"/><path d="M16.8 2.8h4.4v4.4"/>
+  </symbol>
+  <symbol id="i-equalizer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+    <path d="M3 10v4M7.5 6v12M12 3.5v17M16.5 7v10M21 10v4"/>
+  </symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.8 19.6A2 2 0 1 0 14 16H2"/>
+    <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/>
+    <path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>
+  </symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4v4.5M6 15.5V20M12 4v8M12 18v2M18 4v2M18 12v8"/>
+    <circle cx="6" cy="12" r="2"/><circle cx="12" cy="16" r="2"/><circle cx="18" cy="9" r="2"/>
+  </symbol>
+  <symbol id="i-drum" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="8" rx="9" ry="4"/>
+    <path d="M3 8v7.5c0 2.2 4 4 9 4s9-1.8 9-4V8"/>
+    <path d="M7.5 12.4 4.8 20M16.5 12.4 19.2 20"/>
+  </symbol>
+</svg>
+
+<div class="flex h-full flex-col">
+
   <!-- ============ 顶栏 ============ -->
-  <header class="topbar">
-    <button class="drawer-btn" id="drawerBtn" aria-label="音色与设置">☰</button>
-    <div class="brand">
-      <span class="logo">♪</span>
-      <div class="brand-text">
-        <h1>指尖钢琴</h1>
-        <p>Web Audio 实时合成 · MIDI 多音色</p>
+  <header class="flex shrink-0 items-center gap-3 px-4 pb-3 pt-3.5">
+    <button id="drawerBtn" aria-label="音色与设置"
+      class="btn hidden h-9 w-9 p-0 max-lg:inline-flex">
+      <svg class="h-4.5 w-4.5"><use href="#i-menu"/></svg>
+    </button>
+
+    <div class="flex items-center gap-2.5">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-gold-300 to-gold-500 text-ink-950 shadow-[0_4px_18px_rgba(242,181,68,.3)]">
+        <svg class="h-5 w-5"><use href="#i-piano"/></svg>
+      </span>
+      <div>
+        <h1 class="text-[17px] leading-tight font-semibold tracking-wide whitespace-nowrap max-sm:text-[15px]">指尖钢琴</h1>
+        <p class="mt-0.5 text-[11px] text-dim max-sm:hidden">Web Audio 实时合成 · MIDI 多音色</p>
       </div>
     </div>
-    <div class="top-right">
-      <span class="pill" id="midiStatus">MIDI 未连接</span>
-      <span class="pill" id="polyStatus">复音 0 / 64</span>
-      <label class="vol-ctl" title="总音量">
-        <span>🔊</span>
-        <input type="range" id="masterVol" min="0" max="1" step="0.01" value="0.85">
+
+    <div class="ml-auto flex items-center gap-2.5">
+      <span id="midiStatus" class="pill">
+        <svg class="h-3.5 w-3.5"><use href="#i-midi"/></svg>
+        <span>MIDI 未连接</span>
+      </span>
+      <span id="polyStatus" class="pill max-lg:hidden">
+        <svg class="h-3.5 w-3.5"><use href="#i-equalizer"/></svg>
+        <span>复音 0 / 64</span>
+      </span>
+      <label class="flex cursor-pointer items-center gap-2 rounded-full border border-line bg-panel py-1 pl-2.5 pr-3.5" title="总音量">
+        <svg class="h-4 w-4 text-dim"><use href="#i-volume"/></svg>
+        <input id="masterVol" type="range" class="slider w-16 max-sm:w-12 sm:w-24" min="0" max="1" step="0.01" value="0.85">
       </label>
     </div>
   </header>
 
-  <main class="main">
+  <main class="flex min-h-0 flex-1 gap-3 px-3 pb-3 max-lg:px-2 max-lg:pb-2">
+
     <!-- ============ 侧栏 ============ -->
-    <aside class="sidebar">
-      <section class="panel">
-        <h2>音色库 <span class="now" id="instNow">三角钢琴</span></h2>
-        <div class="inst-groups" id="instGroups"></div>
+    <aside class="sidebar scroll-y flex w-[306px] shrink-0 flex-col gap-3 max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-[60] max-lg:w-[292px] max-lg:max-w-[86vw] max-lg:bg-ink-950 max-lg:p-3 max-lg:shadow-[12px_0_44px_rgba(0,0,0,.6)]">
+
+      <section class="card">
+        <h2 class="card-title">
+          <span class="bar"></span>音色库
+          <span id="instNow" class="ml-auto text-[12px] text-gold-400">三角钢琴</span>
+        </h2>
+        <div id="instGroups" class="flex flex-col gap-3"></div>
       </section>
 
-      <section class="panel">
-        <h2>演奏设置</h2>
-        <div class="ctl-row">
-          <label>混响</label>
-          <input type="range" id="reverbAmt" min="0" max="1" step="0.01" value="0.5">
+      <section class="card">
+        <h2 class="card-title"><span class="bar"></span>演奏设置</h2>
+
+        <div class="mb-2.5 flex items-center gap-2.5 text-[12px] text-[#a8b4cc]">
+          <label class="flex w-[86px] shrink-0 items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 text-dim-2"><use href="#i-waves"/></svg>混响
+          </label>
+          <input type="range" id="reverbAmt" class="slider flex-1" min="0" max="1" step="0.01" value="0.5">
         </div>
-        <div class="ctl-row">
-          <label>电脑键盘力度</label>
-          <input type="range" id="kbVel" min="20" max="100" step="1" value="82">
+
+        <div class="mb-2.5 flex items-center gap-2.5 text-[12px] text-[#a8b4cc]">
+          <label class="flex w-[86px] shrink-0 items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 text-dim-2"><use href="#i-activity"/></svg>键盘力度
+          </label>
+          <input type="range" id="kbVel" class="slider flex-1" min="20" max="100" step="1" value="82">
         </div>
-        <div class="ctl-row">
-          <label>音域</label>
-          <div class="oct-ctl">
-            <button id="octDown" title="降八度（↓）">−</button>
-            <span id="octLabel">C2 – B5</span>
-            <button id="octUp" title="升八度（↑）">+</button>
+
+        <div class="mb-2.5 flex items-center gap-2.5 text-[12px] text-[#a8b4cc]">
+          <label class="flex w-[86px] shrink-0 items-center gap-1.5">
+            <svg class="h-3.5 w-3.5 text-dim-2"><use href="#i-keyboard"/></svg>音域
+          </label>
+          <div class="flex flex-1 items-center gap-1.5">
+            <button id="octDown" title="降八度（↓）" class="btn h-7 w-7 p-0">
+              <svg class="h-3.5 w-3.5"><use href="#i-chevron-down"/></svg>
+            </button>
+            <span id="octLabel" class="flex-1 text-center font-mono text-[11.5px] text-gold-400">C2 – B5</span>
+            <button id="octUp" title="升八度（↑）" class="btn h-7 w-7 p-0">
+              <svg class="h-3.5 w-3.5"><use href="#i-chevron-up"/></svg>
+            </button>
           </div>
         </div>
-        <button class="btn wide" id="sustainBtn">🦶 延音踏板（Shift）</button>
-        <p class="hint">
+
+        <button id="sustainBtn" class="btn mt-1 w-full">
+          <svg class="h-4 w-4"><use href="#i-pedal"/></svg>延音踏板
+          <span class="ml-1 rounded border border-line px-1 py-px font-mono text-[10px] text-dim-2">Shift</span>
+        </button>
+
+        <p class="mt-2.5 text-[11px] leading-relaxed text-dim-2">
           屏幕键盘按触位置决定力度：越靠下越响。<br>
-          电脑键盘：<code>Z S X D C…</code> 低八度，<code>Q 2 W 3 E…</code> 高八度；<code>空格</code> 播放/暂停。
+          电脑键盘：<code class="rounded bg-elev px-1 py-px font-mono text-[10.5px] text-[#b6c4e0]">Z S X D C…</code> 低八度，
+          <code class="rounded bg-elev px-1 py-px font-mono text-[10.5px] text-[#b6c4e0]">Q 2 W 3 E…</code> 高八度；
+          <code class="rounded bg-elev px-1 py-px font-mono text-[10.5px] text-[#b6c4e0]">空格</code> 播放/暂停。
         </p>
       </section>
 
-      <section class="panel">
-        <h2>MIDI 设备</h2>
-        <label class="field">
-          <span>输入（外接键盘）</span>
-          <select id="midiInSelect"><option>正在检测…</option></select>
+      <section class="card">
+        <h2 class="card-title"><span class="bar"></span>MIDI 设备</h2>
+        <label class="mb-2.5 block">
+          <span class="mb-1.5 flex items-center gap-1.5 text-[11.5px] text-dim">
+            <svg class="h-3.5 w-3.5"><use href="#i-midi"/></svg>输入（外接键盘）
+          </span>
+          <select id="midiInSelect" class="sel"><option>正在检测…</option></select>
         </label>
-        <label class="field">
-          <span>输出（把屏幕键盘当控制器）</span>
-          <select id="midiOutSelect"><option value="">不输出到外部设备</option></select>
+        <label class="mb-2.5 block">
+          <span class="mb-1.5 flex items-center gap-1.5 text-[11.5px] text-dim">
+            <svg class="h-3.5 w-3.5"><use href="#i-midi"/></svg>输出（屏幕键盘当控制器）
+          </span>
+          <select id="midiOutSelect" class="sel"><option value="">不输出到外部设备</option></select>
         </label>
-        <button class="btn wide ghost" id="btnMidiScan">重新扫描设备</button>
-        <p class="hint" id="midiHint">正在检测 MIDI 设备…</p>
+        <button id="btnMidiScan" class="btn w-full">
+          <svg class="h-3.5 w-3.5"><use href="#i-refresh"/></svg>重新扫描设备
+        </button>
+        <p id="midiHint" class="mt-2 text-[11px] leading-relaxed text-dim-2">正在检测 MIDI 设备…</p>
       </section>
     </aside>
 
     <!-- ============ 主舞台 ============ -->
-    <section class="stage">
-      <div class="panel scope-panel">
-        <canvas id="scope"></canvas>
+    <section class="flex min-w-0 flex-1 flex-col gap-3">
+
+      <div class="card shrink-0 overflow-hidden p-0">
+        <canvas id="scope" class="block h-16 w-full max-lg:h-12"></canvas>
       </div>
 
-      <div class="panel roll-panel">
-        <canvas id="roll"></canvas>
-        <div class="roll-caption">
-          <span id="songName">未载入乐曲 · 实时演奏模式</span>
-          <span class="roll-tools">
+      <div class="card relative flex min-h-[130px] flex-1 flex-col overflow-hidden p-0">
+        <canvas id="roll" class="block min-h-0 w-full flex-1"></canvas>
+        <div class="flex items-center gap-2.5 border-t border-line bg-[#0f141d] px-2.5 py-[7px] text-[11.5px] text-dim">
+          <span id="songName" class="flex-1 truncate">未载入乐曲 · 实时演奏模式</span>
+          <span class="flex shrink-0 gap-1.5">
             <input type="file" id="fileMidi" accept=".mid,.midi,.smf" hidden>
-            <button class="btn mini" onclick="document.getElementById('fileMidi').click()">📂 打开 MIDI</button>
-            <button class="btn mini" id="btnDemo">✨ 演示曲</button>
+            <button class="btn px-2.5 py-1.5 text-[11.5px]" onclick="document.getElementById('fileMidi').click()">
+              <svg class="h-3.5 w-3.5"><use href="#i-folder"/></svg>打开 MIDI
+            </button>
+            <button id="btnDemo" class="btn px-2.5 py-1.5 text-[11.5px]">
+              <svg class="h-3.5 w-3.5"><use href="#i-sparkles"/></svg>演示曲
+            </button>
           </span>
         </div>
       </div>
 
-      <div class="panel track-panel" id="trackPanel" hidden>
-        <h2>多轨 / 多音色 <em class="tip">为每个通道单独指定音色，M 键静音</em></h2>
-        <div class="track-list" id="trackList"></div>
+      <div id="trackPanel" class="card flex max-h-[170px] shrink-0 flex-col" hidden>
+        <h2 class="card-title">
+          <span class="bar"></span>多轨 / 多音色
+          <em class="ml-auto text-[11px] font-normal not-italic text-dim-2">为每个通道单独指定音色，点喇叭静音</em>
+        </h2>
+        <div id="trackList" class="scroll-y flex flex-col gap-1.5"></div>
       </div>
 
-      <div class="panel transport">
-        <button class="btn primary" id="btnPlay">▶ 播放</button>
-        <button class="btn" id="btnStop">⏹ 停止</button>
-        <button class="btn rec" id="btnRec">● 录音</button>
-        <button class="btn" id="btnExport">⬇ 导出 MIDI</button>
-        <div class="progress" id="progressBar">
-          <div class="progress-fill" id="progressFill"></div>
+      <div class="card flex shrink-0 flex-wrap items-center gap-2 px-3 py-2.5">
+        <button id="btnPlay" class="btn is-primary">
+          <svg class="h-4 w-4"><use href="#i-play"/></svg><span>播放</span>
+        </button>
+        <button id="btnStop" class="btn">
+          <svg class="h-4 w-4"><use href="#i-stop"/></svg><span>停止</span>
+        </button>
+        <button id="btnRec" class="btn is-rec">
+          <svg class="h-4 w-4"><use href="#i-record"/></svg><span>录音</span>
+        </button>
+        <button id="btnExport" class="btn">
+          <svg class="h-4 w-4"><use href="#i-download"/></svg><span>导出 MIDI</span>
+        </button>
+        <div id="progressBar" class="min-w-[80px] flex-1 cursor-pointer overflow-hidden rounded-full bg-[#222b3f]" style="height:6px">
+          <div id="progressFill" class="h-full w-0 rounded-full bg-gradient-to-r from-gold-400 to-gold-300 transition-[width] duration-75"></div>
         </div>
-        <span class="time" id="timeNow">0:00</span>
+        <span id="timeNow" class="min-w-[42px] text-right font-mono text-[12px] text-gold-400">0:00</span>
       </div>
 
-      <div class="piano-wrap">
-        <div class="piano-scroll">
-          <div id="piano"></div>
-        </div>
+      <div class="piano-wrap h-[176px] shrink-0 overflow-hidden rounded-2xl border border-line bg-[#0d1119] shadow-[0_-8px_30px_rgba(0,0,0,.35)] max-lg:h-[148px]">
+        <div id="piano" class="h-full w-full"></div>
       </div>
     </section>
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="drop-mask" id="dropMask"><div>松手即可载入 MIDI 文件</div></div>
-<div class="audio-hint" id="audioHint">点击任意位置开启声音 🔊</div>
+<div class="drop-mask" id="dropMask">
+  <div class="flex items-center gap-3">
+    <svg class="h-5 w-5"><use href="#i-folder"/></svg>松手即可载入 MIDI 文件
+  </div>
+</div>
+<div class="audio-hint" id="audioHint">点击任意位置开启声音</div>
 
 <script src="js/instruments.js"></script>
 <script src="js/synth.js"></script>

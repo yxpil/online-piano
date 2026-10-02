@@ -1,0 +1,21 @@
+{
+  "name": "online-piano",
+  "version": "1.0.0",
+  "private": true,
+  "description": "指尖钢琴 · 在线 MIDI 合成钢琴（Web Audio 实时合成 36 种音色 + MIDI 多轨多音色播放与导出）",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yxpil/online-piano.git"
+  },
+  "homepage": "https://yxpil.github.io/online-piano/",
+  "keywords": ["piano", "midi", "web-audio", "synthesizer", "tailwindcss"],
+  "scripts": {
+    "build": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --minify",
+    "dev": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}
