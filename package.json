@@ -12,7 +12,8 @@
   "keywords": ["piano", "midi", "web-audio", "synthesizer", "tailwindcss"],
   "scripts": {
     "build": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --minify",
-    "dev": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --watch"
+    "dev": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --watch",
+    "test": "node --test --test-force-exit tests/"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
