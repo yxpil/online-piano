@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --minify",
     "dev": "tailwindcss -i ./src/tailwind.css -o ./css/style.css --watch",
-    "test": "node --test --test-force-exit tests/"
+    "test": "node --test --test-force-exit \"tests/**/*.test.js\""
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
